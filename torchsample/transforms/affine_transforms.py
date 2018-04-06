@@ -471,19 +471,19 @@ class Translate(object):
         else:
             interp = self.interp
 
-        tx = self.height_range * inputs[0].size(1)
-        ty = self.width_range * inputs[0].size(2)
+        tx = [self.height_range * input.size(1) for input in inputs]
+        ty = [self.width_range * input.size(2) for input in inputs]
 
-        translation_matrix = th.FloatTensor([[1, 0, tx],
-                                             [0, 1, ty],
-                                             [0, 0, 1]])
+        translation_matrix = [th.FloatTensor([[1, 0, _tx],
+                                             [0, 1, _ty],
+                                             [0, 0, 1]]) for _tx,_ty in zip(tx,ty)]
         if self.lazy:
-            return translation_matrix
+            return translation_matrix[0]
         else:
             outputs = []
             for idx, _input in enumerate(inputs):
                 input_tf = th_affine2d(_input,
-                                       translation_matrix,
+                                       translation_matrix[idx],
                                        mode=interp[idx],
                                        center=True)
                 outputs.append(input_tf)
