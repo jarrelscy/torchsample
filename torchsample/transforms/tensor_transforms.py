@@ -454,7 +454,7 @@ class RandomCrop(object):
 
     def __call__(self, *inputs):
         h_idx = random.randint(0,inputs[0].size(1)-self.size[0])
-        w_idx = random.randint(0,inputs[1].size(2)-self.size[1])
+        w_idx = random.randint(0,inputs[0].size(2)-self.size[1])
         outputs = []
         for idx, _input in enumerate(inputs):
             _input = _input[:, h_idx:(h_idx+self.size[0]),w_idx:(w_idx+self.size[1])]
@@ -525,7 +525,7 @@ class SpecialCrop(object):
 
 class Pad(object):
 
-    def __init__(self, size):
+    def __init__(self, size, constant):
         """
         Pads an image to the given size
 
@@ -534,6 +534,7 @@ class Pad(object):
         size : tuple or list
             size of crop
         """
+        self.constant=constant
         self.size = size
 
     def __call__(self, x, y=None):
@@ -541,10 +542,10 @@ class Pad(object):
         shape_diffs = [int(np.ceil((i_s - d_s))) for d_s,i_s in zip(x.shape,self.size)]
         shape_diffs = np.maximum(shape_diffs,0)
         pad_sizes = [(int(np.ceil(s/2.)),int(np.floor(s/2.))) for s in shape_diffs]
-        x = np.pad(x, pad_sizes, mode='constant')
+        x = np.pad(x, pad_sizes, mode='constant',constant_values = self.constant)
         if y is not None:
             y = y.numpy()
-            y = np.pad(y, pad_sizes, mode='constant')
+            y = np.pad(y, pad_sizes, mode='constant',constant_values = self.constant)
             return th.from_numpy(x), th.from_numpy(y)
         else:
             return th.from_numpy(x)
